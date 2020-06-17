@@ -1,4 +1,5 @@
 # VAELLS
+This code accompanies the paper "Variational Autoencoder with Learned Latent Structure" - M. Connor, G. Canal, and C. Rozell
 
 ## Requirements
 - torch
