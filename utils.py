@@ -1,6 +1,3 @@
-#!/usr/bin/env python2
-# -*- coding: utf-8 -*-
-
 from __future__ import division
 
 import scipy.misc
@@ -31,7 +28,7 @@ def create_circle_data(numPoints,noise_std,mapMat,r = 1):
         
         
     samples = np.transpose(np.matmul(mapMat,np.transpose(samples_orig))) 
-    samples = samples + np.random.randn(samples.shape)*noise_std
+    samples = samples + np.random.randn(samples.shape[0],samples.shape[1])*noise_std
     randIdx = np.random.permutation(numPoints*numCircle)
     samples = samples[randIdx,:]
     samples_orig = samples_orig[randIdx,:]
@@ -55,7 +52,7 @@ def create_anchors_circle(numPoints,noise_std,mapMat,r = 1):
         
         
         samples = np.transpose(np.matmul(mapMat,np.transpose(samples_orig)))
-        samples = samples + np.random.randn(samples.shape)*noise_std
+        samples = samples + np.random.randn(samples.shape[0],samples.shape[1])*noise_std
     
     return samples, samples_orig
 
@@ -80,7 +77,7 @@ def create_sphere_data(numPoints,noise_std,mapMat,r = 1):
         
         
     samples = np.transpose(np.matmul(mapMat,np.transpose(samples_orig))) 
-    samples = samples + np.random.randn(samples.shape)*noise_std
+    samples = samples + np.random.randn(samples.shape[0],samples.shape[1])*noise_std
     randIdx = np.random.permutation(numPoints*numCircle)
     samples = samples[randIdx,:]
     samples_orig = samples_orig[randIdx,:]
@@ -106,7 +103,7 @@ def create_anchors_sphere(numPoints,noise_std,mapMat,r = 1):
         
         
         samples = np.transpose(np.matmul(mapMat,np.transpose(samples_orig))) 
-        samples = samples + np.random.randn(samples.shape)*noise_std
+        samples = samples + np.random.randn(samples.shape[0],samples.shape[1])*noise_std
 
     
     return samples, samples_orig
@@ -129,7 +126,7 @@ def create_swissRoll_2D_data(numPoints,tStd,noise_std,mapMat):
     y = np.expand_dims(np.multiply(tt,np.sin(tt)),axis = 1)
     samples_orig = np.concatenate((x,y),axis=1)            
     samples = np.transpose(np.matmul(mapMat,np.transpose(samples_orig))) 
-    samples = samples + np.random.randn(samples.shape)*noise_std
+    samples = samples + np.random.randn(samples.shape[0],samples.shape[1])*noise_std
     #samples = np.log(1+np.exp(samples))  
     randIdx = np.random.permutation(numPoints)
     samples = samples[randIdx,:]/10.0
@@ -144,7 +141,7 @@ def create_anchors_swissRoll_2D(numPoints,tStd,noise_std,mapMat):
     y = np.expand_dims(np.multiply(tt,np.sin(tt)),axis = 1)
     samples_orig = np.concatenate((x,y),axis=1)            
     samples = np.transpose(np.matmul(mapMat,np.transpose(samples_orig))) 
-    samples = samples + np.random.randn(samples.shape)*noise_std
+    samples = samples + np.random.randn(samples.shape[0],samples.shape[1])*noise_std
     #samples = np.log(1+np.exp(samples))  
     randIdx = np.random.permutation(numPoints)
     samples = samples[randIdx,:]/10.0
