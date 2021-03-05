@@ -18,18 +18,17 @@ import torch
 from transOptModel import TransOpt
 
 from utils import *
-from test_metrics_MNIST_natDigit import *
 from trans_opt_objectives import *
 
 parser = argparse.ArgumentParser()  
-parser.add_argument('--model', type=str, default='./results/TOVAE', help='folder name')
+parser.add_argument('--model', type=str, default='/storage/home/hcoda1/6/mnorko3/p-crozell3-0/projects/VAELLS/results/natDigitsLL/VAELLS', help='folder name')
 parser.add_argument('--epoch', type=int, default=75, help='number of epochs of training')
 parser.add_argument('--batch_size', type=int, default=100, help='size of the batches')
 parser.add_argument('--c_dim', type=int, default=1, help='number of color channels in the input image')
 parser.add_argument('--z_dim', type=int, default=6, help='Dimension of the latent space')
 parser.add_argument('--x_dim', type=int, default=20, help='Dimension of the input space')
 parser.add_argument('--c_samp', type=int, default=1, help='Number of samples from the c distribution')
-parser.add_argument('--num_anchor', type=int, default=8, help='Number of anchor points per class')
+parser.add_argument('--num_anchor', type=int, default=2, help='Number of anchor points per class')
 parser.add_argument('--M', type=int, default=4, help='Number of dictionary elements')
 parser.add_argument('--lr', type=float, default=0.0001, help='adam: learning rate')
 parser.add_argument('--anchor_lr', type=float, default=0.0001, help='adam: learning rate')
@@ -60,7 +59,7 @@ parser.add_argument('--closest_anchor_flag', type=int, default=1, help='[0/1] to
 parser.add_argument('--stepUse', type=int, default=33500, help='Trainign step from the saved file that you want to run')
 parser.add_argument('--startPt', type=int, default=0, help='Starting index of test data to compute metrics for')
 parser.add_argument('--num_samp', type=int, default=100, help='Number of latent vectors sampled for each test point')
-parser.add_argument('--numTestPts', type=int, default=500, help='Number of tets points to compute metric')
+parser.add_argument('--numTestPts', type=int, default=250, help='Number of tets points to compute metric')
 opt = parser.parse_args()
 print(opt)
 
@@ -116,8 +115,8 @@ titrate_steps = num_pretrain_steps + 15000    # number of steps after which titr
 max_psi_lr = 0.008      # max psi learning rate allowed
 
 # Specify the sampling spread and variance in the pretrained steps
-post_l1_weight = 100.0
-to_noise_std = 0.0
+#post_l1_weight = 100.0
+#to_noise_std = 0.0
 
 # Parameters for finding the closest anchor points
 closest_anchor_flag = opt.closest_anchor_flag
@@ -138,21 +137,17 @@ batch_orig = 32
 if data_use == 'rotDigits':
     from test_metrics_MNIST_rotDigit import *
 elif data_use == 'natDigits':
-    from test_metrics_MNIST_natDigit import *
+    from test_metrics_MNIST_natDigit_singleAnchor import *
 
 # May need to adjust the structure of these saving paths depending on the data you want to 
 if alternate_steps_flag == 0:
-    save_folder = opt.model + '_vAN' + str(opt.priorWeight_nsteps) + '_vAT' + str(opt.netWeights_psteps) + '_' + str(numRestart) + 'start_' + data_use + '_pre' + str(num_pretrain_steps) + '_CA' + str(closest_anchor_flag) + '_M' + str(M) + '_z' + str(z_dim) + '_A' + str(opt.num_anchor)  + '_batch' + str(opt.batch_size) + '_rw' + str(opt.recon_weight) + '_pol1' + str(opt.post_l1_weight) + '_poR' + str(opt.post_TO_weight)+ '_poC' + str(opt.post_cInfer_weight) + '_prl1' + str(opt.prior_l1_weight) + '_prR' + str(opt.prior_weight) +  '_prC' + str(opt.prior_cInfer_weight)  + '_g' + str(opt.gamma) + '_lr' + str(opt.lr)  +'/'
-    sample_dir = opt.model +  '_vAN' + str(opt.priorWeight_nsteps) + '_vAT' + str(opt.netWeights_psteps) + '_' + str(numRestart) + 'start_' + data_use + '_pre' + str(num_pretrain_steps) + '_CA' + str(closest_anchor_flag) + '_M' + str(M) + '_z' + str(z_dim) + '_A' + str(opt.num_anchor) + '_batch' + str(opt.batch_size) + '_rw' + str(opt.recon_weight) + '_pol1' + str(opt.post_l1_weight) + '_poR' + str(opt.post_TO_weight)+ '_poC' + str(opt.post_cInfer_weight) + '_prl1' + str(opt.prior_l1_weight) + '_prR' + str(opt.prior_weight) +  '_prC' + str(opt.prior_cInfer_weight)  + '_g' + str(opt.gamma) + '_lr' + str(opt.lr) +'_samples/'
+    save_folder = opt.model +  '_' + data_use + '_pre' + str(num_pretrain_steps) + '_CA' + str(closest_anchor_flag) + '_M' + str(M) + '_z' + str(z_dim) + '_A' + str(opt.num_anchor)  + '_batch' + str(opt.batch_size) + '_rw' + str(opt.recon_weight) + '_pol1' + str(opt.post_l1_weight) + '_poR' + str(opt.post_TO_weight)+ '_poC' + str(opt.post_cInfer_weight) + '_prl1' + str(opt.prior_l1_weight) + '_prR' + str(opt.prior_weight) +  '_prC' + str(opt.prior_cInfer_weight)  + '_g' + str(opt.gamma) + '_lr' + str(opt.lr)  +'_toN' + str(opt.to_noise_std) + '/'
 else:
-    save_folder = opt.model +  '_vAN' + str(opt.priorWeight_nsteps) + '_vAT' + str(opt.netWeights_psteps) + '_' + str(numRestart) + 'start_' + data_use + '_pre' + str(num_pretrain_steps) + '_CA' + str(closest_anchor_flag) + '_M' + str(M) + '_z' + str(z_dim) + '_A' + str(opt.num_anchor)  + '_batch' + str(opt.batch_size) + '_rw' + str(opt.recon_weight) + '_pol1' + str(opt.post_l1_weight) + '_poR' + str(opt.post_TO_weight)+ '_poC' + str(opt.post_cInfer_weight) + '_prl1' + str(opt.prior_l1_weight) + '_prR' + str(opt.prior_weight) +  '_prC' + str(opt.prior_cInfer_weight)  + '_g' + str(opt.gamma) + '_lr' + str(opt.lr) + '_nst' + str(num_net_steps) + 'pst' + str(num_psi_steps) +  '/'
-    sample_dir= opt.model +  '_vAN' + str(opt.priorWeight_nsteps) + '_vAT' + str(opt.netWeights_psteps) + '_' + str(numRestart) + 'start_' + data_use + '_pre' + str(num_pretrain_steps) + '_CA' + str(closest_anchor_flag) + '_M' + str(M) + '_z' + str(z_dim) + '_A' + str(opt.num_anchor)  + '_batch' + str(opt.batch_size) + '_rw' + str(opt.recon_weight) + '_pol1' + str(opt.post_l1_weight) + '_poR' + str(opt.post_TO_weight)+ '_poC' + str(opt.post_cInfer_weight) + '_prl1' + str(opt.prior_l1_weight) + '_prR' + str(opt.prior_weight) +  '_prC' + str(opt.prior_cInfer_weight)  + '_g' + str(opt.gamma) + '_lr' + str(opt.lr) + '_nst' + str(num_net_steps) + 'pst' + str(num_psi_steps) + '_samples/'
+    save_folder = opt.model + '_'+ data_use + '_pre' + str(num_pretrain_steps) + '_CA' + str(closest_anchor_flag) + '_M' + str(M) + '_z' + str(z_dim) + '_A' + str(opt.num_anchor)  + '_batch' + str(opt.batch_size) + '_rw' + str(opt.recon_weight) + '_pol1' + str(opt.post_l1_weight) + '_poR' + str(opt.post_TO_weight)+ '_poC' + str(opt.post_cInfer_weight) + '_prl1' + str(opt.prior_l1_weight) + '_prR' + str(opt.prior_weight) +  '_prC' + str(opt.prior_cInfer_weight)  + '_g' + str(opt.gamma) + '_lr' + str(opt.lr) + '_nst' + str(num_net_steps) + 'pst' + str(num_psi_steps) +  '_toN' + str(opt.to_noise_std) + '/'
 
 
 if not os.path.exists(save_folder):
     os.makedirs(save_folder)
-if not os.path.exists(sample_dir):
-    os.makedirs(sample_dir)
     
 start_time = time.time()
 counter = 1
@@ -172,9 +167,9 @@ transNet = TransOpt()
 sampler_c = Sample_c()
 # Load a pretrained file - make sure the model parameters fit the parameters of rht pre-trained models
 if data_use == 'rotDigits':
-    checkpoint = torch.load('./pretrained_models/rotMNIST/network_batch32_zdim10.pt')
+    checkpoint = torch.load('./pretrained_models/rotMNIST/network_batch32_zdim10_M' + str(opt.M) + '_A' + str(opt.num_anchor) + '.pt')
 elif data_use == 'natDigits':
-    checkpoint = torch.load('./pretrained_models/natMNIST/network_batch32_zdim6.pt')
+    checkpoint = torch.load('./pretrained_models/natMNIST/network_M' + str(opt.M) + '_A' + str(opt.num_anchor) + '_toN' + str(opt.to_noise_std) + '.pt')
 # Or specify a network that's been trained independently
 #checkpoint = torch.load(save_folder + 'network_batch' + str(batch_orig) + '_zdim' + str(opt.z_dim) +  '_step' + str(opt.stepUse) + '.pt')
 encoder.load_state_dict(checkpoint['model_state_dict_encoder'])
@@ -199,12 +194,12 @@ sample_X_torch =sample_X_torch.permute(0,3,1,2)
 sample_X_torch =sample_X_torch.float()
 
 if data_use == 'natDigits':
-    LL,LL_detail,LL_no_add,LL_detail_no_add = log_likelihood(encoder,decoder,transNet,sampler_c,Psi,sample_X_torch,sample_labels[opt.startPt:opt.startPt+numTestPts],anchors,to_noise_std,num_anchor,M,numRestart,scale,opt,save_folder,num_samp)
-    MSE,ELBO = test_metrics(encoder,decoder,transNet,sampler_c,Psi,sample_X_torch,sample_labels[opt.startPt:opt.startPt+numTestPts],anchors,to_noise_std,num_anchor,M,1,opt,mse_loss_sum,latent_mse_loss,scale)
+    LL,LL_detail,LL_no_add,LL_detail_no_add = log_likelihood(encoder,decoder,transNet,sampler_c,Psi,sample_X_torch,sample_labels[opt.startPt:opt.startPt+numTestPts],anchors,opt.to_noise_std,num_anchor,M,numRestart,scale,opt,save_folder,num_samp)
+    MSE,ELBO = test_metrics(encoder,decoder,transNet,sampler_c,Psi,sample_X_torch,sample_labels[opt.startPt:opt.startPt+numTestPts],anchors,opt.to_noise_std,num_anchor,M,1,opt,mse_loss_sum,latent_mse_loss,scale)
 elif data_use == 'rotDigits':
-    LL,LL_detail,LL_no_add,LL_detail_no_add = log_likelihood(encoder,decoder,transNet,sampler_c,Psi,sample_X_torch,sample_labels[0:numTestPts],to_noise_std,num_anchor,M,numRestart,scale,opt,save_folder,num_samp)
-    MSE,ELBO = test_metrics(encoder,decoder,transNet,sampler_c,Psi,sample_X,sample_labels,to_noise_std,num_anchor,M,1,opt,mse_loss_sum,latent_mse_loss,scale)
+    LL,LL_detail,LL_no_add,LL_detail_no_add = log_likelihood(encoder,decoder,transNet,sampler_c,Psi,sample_X_torch,sample_labels[0:numTestPts],opt.to_noise_std,num_anchor,M,numRestart,scale,opt,save_folder,num_samp)
+    MSE,ELBO = test_metrics(encoder,decoder,transNet,sampler_c,Psi,sample_X,sample_labels,opt.to_noise_std,num_anchor,M,1,opt,mse_loss_sum,latent_mse_loss,scale)
     
-sio.savemat(save_folder + 'LLMetrics_batch' + str(opt.batch_size) + '_' + str(num_samp) + 'samp_startPt' + str(opt.startPt) + '_step' + str(opt.stepUse) + '.mat',{'LL':LL,'LL_detail':LL_detail,'LL_no_add':LL_no_add,'LL_detail_no_add':LL_detail_no_add});
-sio.savemat(save_folder + 'MSELEBOMetrics_batch' + str(opt.batch_size) + '_' + str(num_samp) + 'samp_step' + str(opt.stepUse) + '.mat',{'MSE':MSE,'ELBO':ELBO});
+sio.savemat(save_folder + 'LLMetrics_singleAnc_batch' + str(opt.batch_size) + '_' + str(num_samp) + 'samp_startPt' + str(opt.startPt) + '_step' + str(opt.stepUse) + '.mat',{'LL':LL,'LL_detail':LL_detail,'LL_no_add':LL_no_add,'LL_detail_no_add':LL_detail_no_add});
+sio.savemat(save_folder + 'MSELEBOMetrics_singleAnc_batch' + str(opt.batch_size) + '_' + str(num_samp) + 'samp_step' + str(opt.stepUse) + '.mat',{'MSE':MSE,'ELBO':ELBO});
 
