@@ -161,7 +161,7 @@ def create_anchors_swissRoll_2D(numPoints,tStd,noise_std,mapMat,rand_flag = 0):
     return samples, samples_orig,labels
 
 def load_mnist(data_type,y_dim=10):
-        data_dir = os.path.join("./data/", 'mnist')
+        data_dir = os.path.join("/storage/home/hcoda1/6/mnorko3/p-crozell3-0/rich_project_pf1/", 'mnist')
 
         print(os.path.join(data_dir,'train-images-idx3-ubyte'))
         fd = open(os.path.join(data_dir,'train-images.idx3-ubyte'))
