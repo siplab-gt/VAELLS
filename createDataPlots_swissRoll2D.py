@@ -144,7 +144,6 @@ kappa = 8
 scale = 1.0
 decay = 0.99
 titrate_decay = 0.9992
-zeta = opt.zeta
 lr_psi = opt.lr_psi
 to_noise_std_later = 0.001
 num_c_samp  = opt.c_samp

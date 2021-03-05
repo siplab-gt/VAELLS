@@ -53,16 +53,35 @@ def log_likelihood(encoder,decoder,transNet,sampler_c,Psi,x,sample_labels,anchor
     a_mu_scale = torch.div(a_mu,scale)
     a_mu_scale_np = a_mu_scale.detach().numpy()
 
+    d = a_mu.size(1)
+    sigma_recon = np.sqrt(1.0/(opt.recon_weight))
+    p_x_add = -D/2*np.log(2*np.pi)-D*np.log(sigma_recon)
+    
+    #gamma_post = 1/np.sqrt(opt.post_TO_weight)
+    gamma_post = to_noise_std
+    post_TO_weight = 1.0/(gamma_post**2)
+    b_post = 1.0/opt.post_l1_weight
+    q_z_x_add = -d/2.0*np.log(2.0*np.pi)-d*np.log(gamma_post) - M*np.log(2.0*b_post) 
+    
+    gamma_prior = to_noise_std
+    #gamma_prior = 1/np.sqrt(opt.prior_weight)
+    prior_weight =1.0/(gamma_prior**2)
+    #b_prior = 1/opt.prior_l1_weight
+    b_prior = 1.0/opt.post_l1_weight
+    prior_l1_weight = opt.post_l1_weight
+    p_z_add = -d/2.0*np.log(2*np.pi)-d*np.log(gamma_prior) - M*np.log(2.0*b_prior) 
     
     LL_inner = np.zeros((batch_size_use,1))
     LL_inner_no_add = np.zeros((batch_size_use,1))
     time_save = np.zeros((batch_size_use))
+    #log_q_z_x_no_add_store = np.zeros((batch_size_use))
+    #log_p_x_z_no_add_store = np.zeros((batch_size_use))
     for n in range(0,batch_size_use):
         batch_time_start = time.time()
         
         x_ind_torch = torch.unsqueeze(x[n,:,:,:],0)        
         
-        d = a_mu.size(1)
+        
         
         z_mu  = encoder(x_ind_torch)
         z_mu_scale = torch.div(z_mu,scale)
@@ -75,9 +94,9 @@ def log_likelihood(encoder,decoder,transNet,sampler_c,Psi,x,sample_labels,anchor
         z = torch.mul(z_scale,scale)
         z_scale_np = z_scale.detach().numpy()
         
-        sigma_recon = np.sqrt(1.0/(opt.recon_weight))
-        p_x_add = -D/2*np.log(2*np.pi)-D*np.log(sigma_recon)
+        
         log_p_x_z_no_add = -0.5*opt.recon_weight*torch.sum((decoder(z.float()).double().reshape(k,-1)-x_repeat.double().reshape(k,-1))**2,1)
+        log_p_x_z_no_add_store = log_p_x_z_no_add.detach().numpy()
         log_p_x_z = log_p_x_z_no_add +p_x_add
 
         x0 = z_mu_scale_np[0,:].astype('double')
@@ -87,11 +106,9 @@ def log_likelihood(encoder,decoder,transNet,sampler_c,Psi,x,sample_labels,anchor
             c_est_mu[b,:],E,nit = infer_transOpt_coeff(x0,x1,Psi.detach().numpy().astype('double'),opt.post_cInfer_weight,0.0,1.0)
         z_est_mu_scale = transNet(z_mu_scale_repeat.double(),torch.from_numpy(c_est_mu),Psi,0.0)
 
-        gamma_post = 1/np.sqrt(opt.post_TO_weight)
-        b_post = 1/opt.post_l1_weight
-        q_z_x_add = -d/2*np.log(2*np.pi)-d*np.log(gamma_post) - M*np.log(2*b_post) 
-       
-        log_q_z_x_no_add = -opt.post_TO_weight*0.5*torch.sum((scale*(z_scale.double()-z_est_mu_scale))**2,1) -opt.post_l1_weight*torch.sum(torch.abs(torch.from_numpy(c_est_mu)),1) 
+        
+        log_q_z_x_no_add = -post_TO_weight*0.5*torch.sum((scale*(z_scale.double()-z_est_mu_scale))**2,1) -opt.post_l1_weight*torch.sum(torch.abs(torch.from_numpy(c_est_mu)),1) 
+        log_q_z_x_no_add_store = log_q_z_x_no_add.detach().numpy()
         log_q_z_x = log_q_z_x_no_add + q_z_x_add
         # Compute the prior loss function
         if sample_labels.ndim == 1:
@@ -103,9 +120,7 @@ def log_likelihood(encoder,decoder,transNet,sampler_c,Psi,x,sample_labels,anchor
         a_mu_use = a_mu_scale[int(num_anchor*label_use):int(num_anchor*(label_use+1)),:]
         log_p_z_no_add = torch.zeros(k)
         log_p_z = torch.zeros(k)
-        gamma_prior = 1/np.sqrt(opt.prior_weight)
-        b_prior = 1/opt.prior_l1_weight
-        p_z_add = -d/2*np.log(2*np.pi)-d*np.log(gamma_prior) - M*np.log(2*b_prior) 
+        
         anchor_idx_use = np.zeros((opt.batch_size))
         for b in range(0,k):
             x1 = z_scale_np[b,:].astype('double')
@@ -133,19 +148,21 @@ def log_likelihood(encoder,decoder,transNet,sampler_c,Psi,x,sample_labels,anchor
                 c_est_a[a_idx,:] = c_est_a_store[minIdx,:]
                 #c_est_a[a_idx,:],E_anchor[b,a_idx],nit_anchor[b,a_idx] = infer_transOpt_coeff(x0,x1,Psi_use.astype('double'),opt.prior_cInfer_weight,-100.0,100.0)
                 c_est_a_ind = c_est_a[a_idx,:]
-                
+                test = 0
                 arc_len = E_anchor[a_idx,minIdx]
                 if opt.closest_anchor_flag == 0:
                     z_est_a_scale_ind = transNet(torch.unsqueeze(a_mu_use[a_idx,:].double(),0),torch.from_numpy(np.expand_dims(c_est_a_ind,axis =0)),Psi,0.0)
                     z_est_a_ind = torch.mul(z_est_a_scale_ind,scale) 
-                    prior_TO_temp = torch.exp(-0.5*opt.prior_weight*torch.sum(torch.pow(scale*(z_scale[b,:].double()-z_est_a_scale_ind),2))-opt.prior_l1_weight*torch.sum(torch.abs(torch.from_numpy(c_est_a_ind))))
+                    prior_TO_temp = torch.exp(-0.5*prior_weight*torch.sum(torch.pow(scale*(z_scale[b,:].double()-z_est_a_scale_ind),2))-prior_l1_weight*torch.sum(torch.abs(torch.from_numpy(c_est_a_ind))))
                     prior_TO_anchor_sum = prior_TO_anchor_sum+prior_TO_temp
                 elif opt.closest_anchor_flag == 1:
                     if arc_len < arc_len_min:
                         z_est_a_scale_ind = transNet(torch.unsqueeze(a_mu_use[a_idx,:].double(),0),torch.from_numpy(np.expand_dims(c_est_a_ind,axis =0)),Psi,0.0)
                         z_est_a_ind = torch.mul(z_est_a_scale_ind,scale) 
-                        prior_TO_anchor_sum = torch.exp(-0.5*opt.prior_weight*torch.sum(torch.pow(scale*(z_scale[b,:].double()-z_est_a_scale_ind),2))-opt.prior_l1_weight*torch.sum(torch.abs(torch.from_numpy(c_est_a_ind))))
+                
+                        prior_TO_anchor_sum = torch.exp(-0.5*prior_weight*torch.sum(torch.pow(scale*(z_scale[b,:].double()-z_est_a_scale_ind),2))-prior_l1_weight*torch.sum(torch.abs(torch.from_numpy(c_est_a_ind))))
                         #print('Change: arc orig: ' + str(arc_len_min) + ' arc new: ' + str(arc_len) + ' prior: ' + str(prior_TO_anchor_sum.detach().numpy()))
+                        test = 1
                         arc_len_min = arc_len
                         anchor_idx_use[b] = a_idx
                 #z_est_a_ind = transNet(torch.unsqueeze(a_mu_scale[a_idx,:].double(),0),torch.from_numpy(np.expand_dims(c_est_a_ind,axis =0)),Psi,0.0)

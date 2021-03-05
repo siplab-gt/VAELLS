@@ -31,7 +31,7 @@ def create_circle_data(numPoints,noise_std,mapMat,r = 1):
         
         
     samples = np.transpose(np.matmul(mapMat,np.transpose(samples_orig))) 
-    samples = samples + np.random.randn(samples.shape)*noise_std
+    samples = samples + np.random.randn(samples.shape[0],samples.shape[1])*noise_std
     randIdx = np.random.permutation(numPoints*numCircle)
     samples = samples[randIdx,:]
     samples_orig = samples_orig[randIdx,:]
@@ -39,12 +39,15 @@ def create_circle_data(numPoints,noise_std,mapMat,r = 1):
     
     return samples, samples_orig,labels
 
-def create_anchors_circle(numPoints,noise_std,mapMat,r = 1):
+def create_anchors_circle(numPoints,noise_std,mapMat,r = 1,rand_flag= 0):
     numCircle = r.shape[0]
 
     for k in range(0,numCircle):
-        angles_use = np.arange(0,360,360/numPoints)*np.pi/180.0
-    
+        if rand_flag == 0:
+            angles_use = np.arange(0,360,360/numPoints)*np.pi/180.0
+        else:
+            angles_use = np.random.uniform(0,2*np.pi,numPoints)
+        
         x = np.expand_dims(r[k]*np.cos(angles_use),axis = 1)
         y = np.expand_dims(r[k]*np.sin(angles_use),axis = 1)
 
@@ -55,7 +58,7 @@ def create_anchors_circle(numPoints,noise_std,mapMat,r = 1):
         
         
         samples = np.transpose(np.matmul(mapMat,np.transpose(samples_orig)))
-        samples = samples + np.random.randn(samples.shape)*noise_std
+        samples = samples + np.random.randn(samples.shape[0],samples.shape[1])*noise_std
     
     return samples, samples_orig
 
@@ -80,7 +83,7 @@ def create_sphere_data(numPoints,noise_std,mapMat,r = 1):
         
         
     samples = np.transpose(np.matmul(mapMat,np.transpose(samples_orig))) 
-    samples = samples + np.random.randn(samples.shape)*noise_std
+    samples = samples + np.random.randn(samples.shape[0],samples.shape[1])*noise_std
     randIdx = np.random.permutation(numPoints*numCircle)
     samples = samples[randIdx,:]
     samples_orig = samples_orig[randIdx,:]
@@ -106,7 +109,7 @@ def create_anchors_sphere(numPoints,noise_std,mapMat,r = 1):
         
         
         samples = np.transpose(np.matmul(mapMat,np.transpose(samples_orig))) 
-        samples = samples + np.random.randn(samples.shape)*noise_std
+        samples = samples + np.random.randn(samples.shape[0],samples.shape[1])*noise_std
 
     
     return samples, samples_orig
@@ -129,7 +132,7 @@ def create_swissRoll_2D_data(numPoints,tStd,noise_std,mapMat):
     y = np.expand_dims(np.multiply(tt,np.sin(tt)),axis = 1)
     samples_orig = np.concatenate((x,y),axis=1)            
     samples = np.transpose(np.matmul(mapMat,np.transpose(samples_orig))) 
-    samples = samples + np.random.randn(samples.shape)*noise_std
+    samples = samples + np.random.randn(samples.shape[0],samples.shape[1])*noise_std
     #samples = np.log(1+np.exp(samples))  
     randIdx = np.random.permutation(numPoints)
     samples = samples[randIdx,:]/10.0
@@ -138,13 +141,17 @@ def create_swissRoll_2D_data(numPoints,tStd,noise_std,mapMat):
                                         
     return samples, samples_orig,labels
 
-def create_anchors_swissRoll_2D(numPoints,tStd,noise_std,mapMat):
-    tt = (3*np.pi/2)*(1+tStd*np.linspace(0.1,0.9,numPoints));
+def create_anchors_swissRoll_2D(numPoints,tStd,noise_std,mapMat,rand_flag = 0):
+    if rand_flag == 0:
+        tt = (3*np.pi/2)*(1+tStd*np.linspace(0.1,0.9,numPoints))
+    else:
+        tt = (3*np.pi/2)*(1+tStd*np.random.uniform(0.0,1.0,numPoints))
+
     x = np.expand_dims(np.multiply(tt,np.cos(tt)),axis = 1)
     y = np.expand_dims(np.multiply(tt,np.sin(tt)),axis = 1)
     samples_orig = np.concatenate((x,y),axis=1)            
     samples = np.transpose(np.matmul(mapMat,np.transpose(samples_orig))) 
-    samples = samples + np.random.randn(samples.shape)*noise_std
+    samples = samples + np.random.randn(samples.shape[0],samples.shape[1])*noise_std
     #samples = np.log(1+np.exp(samples))  
     randIdx = np.random.permutation(numPoints)
     samples = samples[randIdx,:]/10.0

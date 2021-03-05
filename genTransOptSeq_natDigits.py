@@ -274,7 +274,7 @@ for k in range(0,10):
             img_seq[m,t_count,:,:,:] = transImg_np
             
             t_count = t_count+1
-        print "Class " + str(k) + " Operator " + str(m)
+        print("Class " + str(k) + " Operator " + str(m))
     sio.savemat(sample_dir + '/transOptOrbitTest_natDigit_startDigit_step' + str(stepUse) + '_' + str(k+1) + '.mat',{'latent_seq':z_seq,'imgOut':img_seq,'Psi_new':Psi_use,'t_vals':t,'imgChoice':imgChoice})
  
 numEx = 20
@@ -317,7 +317,7 @@ for k in range(0,numEx):
             img_seq[k,m,t_count,:,:,:] = transImg_np
             
             t_count = t_count+1
-        print "Ex " + str(k) + " Operator " + str(m)
+        print("Ex " + str(k) + " Operator " + str(m))
         
 sio.savemat(sample_dir + '/transOptOrbitTest_natDigit_randDigit_step' + str(stepUse) + '.mat',{'latent_seq':z_seq,'imgOut':img_seq,'Psi_new':Psi_use,'t_vals':t,'imgLabel':imgLabel})
 
@@ -363,5 +363,5 @@ for k in range(0,10):
         
         
 
-        print "Sampling: Class " + str(k) 
+        print("Sampling: Class " + str(k) )
     sio.savemat(sample_dir + '/transOptSampleTest_natDigit_startDigit_step' + str(stepUse) + '.mat',{'imgOrig':imgOrig,'z_pt_samp':z_pt_samp,'img_samp':img_samp})

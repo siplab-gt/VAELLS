@@ -30,42 +30,44 @@ from trans_opt_objectives import *
 
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--model', type=str, default='./results/TOVAE', help='folder name')
-parser.add_argument('--epoch', type=int, default=75, help='number of epochs of training')
-parser.add_argument('--batch_size', type=int, default=32, help='size of the batches')
+parser.add_argument('--model', type=str, default='/storage/home/hcoda1/6/mnorko3/p-crozell3-0/projects/VAELLS/circle/VAELLS_new', help='folder name')
+parser.add_argument('--epoch', type=int, default=80, help='number of epochs of training')
+parser.add_argument('--batch_size', type=int, default=30, help='size of the batches')
 parser.add_argument('--c_dim', type=int, default=1, help='number of color channels in the input image')
-parser.add_argument('--z_dim', type=int, default=6, help='Dimension of the latent space')
+parser.add_argument('--z_dim', type=int, default=2, help='Dimension of the latent space')
 parser.add_argument('--x_dim', type=int, default=20, help='Dimension of the input space')
 parser.add_argument('--c_samp', type=int, default=1, help='Number of samples from the coefficient distribution')
-parser.add_argument('--num_anchor', type=int, default=8, help='Number of anchor points per class')
+parser.add_argument('--num_anchor', type=int, default=3, help='Number of anchor points per class')
 parser.add_argument('--M', type=int, default=4, help='Number of dictionary elements')
 parser.add_argument('--lr', type=float, default=0.0001, help='adam: learning rate for network weight updates')
 parser.add_argument('--anchor_lr', type=float, default=0.0001, help='adam: learning rate for anthor point updates')
-parser.add_argument('--lr_psi', type=float, default=0.00001, help='learning rate for Psi')
+parser.add_argument('--lr_psi', type=float, default=0.0004, help='learning rate for Psi')
 parser.add_argument('--b1', type=float, default=0.5, help='adam: momentum term')
 parser.add_argument('--b2', type=float, default=0.999, help='adam: momentum term')
-parser.add_argument('--recon_weight', type=float, default=1.0, help='Weight of the reconstruction term of the loss function (zeta_1)')
+parser.add_argument('--recon_weight', type=float, default=0.01, help='Weight of the reconstruction term of the loss function (zeta_1)')
 parser.add_argument('--post_TO_weight', type=float, default=1.0, help='Weight of the posterior reconstruction term of the loss function (zeta_2)')
 parser.add_argument('--post_l1_weight', type=float, default=1.0, help='Weight of the posterior l1  term of the loss function (zeta_3)')
 parser.add_argument('--prior_weight', type=float, default=1.0, help='Weight of the prior reconstruction term of the loss function (zeta_4)')
 parser.add_argument('--prior_l1_weight', type=float, default=0.01, help='Weight of the prior l1  term of the loss function (zeta_5)')
 parser.add_argument('--post_cInfer_weight', type=float, default= 0.000001, help='Weight of the prior on the l1 term during inference in the posterior')
-parser.add_argument('--prior_cInfer_weight', type=float, default=0.000001, help='Weight of the prior on the l1 term during inference in the prior')
+parser.add_argument('--prior_cInfer_weight', type=float, default=0.000005, help='Weight of the prior on the l1 term during inference in the prior')
 parser.add_argument('--gamma', type=float, default=0.01, help='Weight on transport operator dictionary regularizer')
 parser.add_argument('--img_size', type=int, default=28, help='Image dimension')
 parser.add_argument('--num_net_steps', type=int, default=20, help='Number of steps on only the network and anchor weights')
-parser.add_argument('--num_psi_steps', type=int, default=60, help='Number of steps on only the psi weights')
-parser.add_argument('--priorWeight_nsteps', type=float, default= 0.0001, help='Weight of the prior term during the network weight update steps')
-parser.add_argument('--netWeights_psteps', type=float, default=0.0001, help='Weight of the reconstruction loss during the transport operator weight update steps')
-parser.add_argument('--to_noise_std', type=float, default=0.001, help='Noise for sampling gaussian noise in latent space')
-parser.add_argument('--num_pretrain_steps', type=int, default=30000, help='Number of warm up steps for the network weights')
-parser.add_argument('--data_use', type=str,default = 'natDigits',help='Specify which dataset to use [concen_circle,swiss2D,rotDigits,natDigits]')
-parser.add_argument('--alternate_steps_flag', type=int, default=1, help='[0/1] to specify whether to alternate between steps updating net weights and psi weights ')
-parser.add_argument('--closest_anchor_flag', type=int, default=1, help='[0/1] to to only add the error to the closest anchor point to the objective ')
-parser.add_argument('--numRestart', type=int, default=1, help='number of restarts for coefficient inference')
-parser.add_argument('--coeffRandStart', type=float, default=-2.5, help='sStarting point for selecting range of random restarts for coefficients')
-parser.add_argument('--coeffRandAdd', type=float, default=5.0, help='Range of random restarts for coefficients')
-
+parser.add_argument('--num_psi_steps', type=int, default=20, help='Number of steps on only the psi weights')
+parser.add_argument('--priorWeight_nsteps', type=float, default= 0.01, help='Weight of the prior term during the network weight update steps')
+parser.add_argument('--netWeights_psteps', type=float, default=0.001, help='Weight of the reconstruction loss during the transport operator weight update steps')
+parser.add_argument('--to_noise_std', type=float, default=0.0001, help='Noise for sampling gaussian noise in latent space')
+parser.add_argument('--num_pretrain_steps', type=int, default=500, help='Number of warm up steps for the network weights')
+parser.add_argument('--data_use', type=str,default = 'concen_circle',help='Specify which dataset to use [concen_circle,swiss2D,rotDigits,natDigits]')
+parser.add_argument('--alternate_steps_flag', type=int, default=0, help='[0/1] to specify whether to alternate between steps updating net weights and psi weights ')
+parser.add_argument('--closest_anchor_flag', type=int, default=0, help='[0/1] to to only add the error to the closest anchor point to the objective ')
+parser.add_argument('--numRestart', type=int, default=2, help='number of restarts for coefficient inference')
+parser.add_argument('--coeffRandStart', type=float, default= -2.5, help='sStarting point for selecting range of random restarts for coefficients')
+parser.add_argument('--coeffRandAdd', type=float, default=2.5, help='Range of random restarts for coefficients')
+parser.add_argument('--test_num', type=int, default=2, help='test number')
+parser.add_argument('--random_seed', type=int, default=2, help='random seed')
+parser.add_argument('--rand_flag', type=int, default=1, help='random seed')
 opt = parser.parse_args()
 print(opt)
 
@@ -124,13 +126,13 @@ num_net_steps = opt.num_net_steps
 num_psi_steps = opt.num_psi_steps
 alternate_steps_flag = opt.alternate_steps_flag
 lr_anchor = opt.anchor_lr
-
+rand_flag = opt.rand_flag
 # Parameter for scaling the latent space to accommodate coefficient inference
-scale = 10.0 
+scale = 1.0 
 
 # Define decay in psi learning rate with unsuccessful steps or after a certain number of steps
 decay = 0.99                                    # Decay after psi steps that increase the objective
-max_psi_lr = 0.008                              # Max psi learning rate allowed, after this learning rate is reached, the learning rate plateaus for every successful step
+max_psi_lr = 0.1                             # Max psi learning rate allowed, after this learning rate is reached, the learning rate plateaus for every successful step
 titrate_steps = num_pretrain_steps + 15000      # Number of steps after which titration decay occurs
 titrate_decay = 0.9992                          # Decay rate after titrate_steps is reached, this encourages fine settling to a final state
 
@@ -183,7 +185,7 @@ if data_use == 'concen_circle':
     from fullyConnectedModel import Encoder
     from fullyConnectedModel import Decoder
     sample_X,sample_orig,sample_labels = create_circle_data(nTrain//2,noise_std,mapMat,np.array([0.5,1]))
-    anchor_X,anchor_orig = create_anchors_circle(num_anchor,0.0,mapMat,np.array([0.5,1]))
+    anchor_X,anchor_orig = create_anchors_circle(num_anchor,0.0,mapMat,np.array([0.5,1]),rand_flag)
     batch_idxs = len(sample_X) // opt.batch_size
     sample_X_torch = torch.from_numpy(sample_X)
     sample_X_torch = sample_X_torch.float()
@@ -208,7 +210,7 @@ elif data_use == 'swiss2D':
     # Create points on a swiss roll that are mapped in a higher dimensional space
     sample_X,sample_orig,sample_labels = create_swissRoll_2D_data(nTrain,2.0,noise_std,mapMat)
     # Define anchor points
-    anchor_X,anchor_orig,_ = create_anchors_swissRoll_2D(num_anchor,2.0,0.0,mapMat)
+    anchor_X,anchor_orig,_ = create_anchors_swissRoll_2D(num_anchor,2.0,0.0,mapMat,rand_flag)
     batch_idxs = len(sample_X) // opt.batch_size
     sample_X_torch = torch.from_numpy(sample_X)
     sample_X_torch = sample_X_torch.float()
@@ -354,7 +356,6 @@ for epoch in xrange(opt.epoch):
         else:
             input_sample = sample_X_torch[idx*opt.batch_size:(idx+1)*opt.batch_size]
             sample_labels_batch = sample_labels[idx*opt.batch_size:(idx+1)*opt.batch_size]
-
         # Set NN gradients to zero
         optimizer_NN.zero_grad()
         
@@ -367,7 +368,6 @@ for epoch in xrange(opt.epoch):
         # Encode anchor points
         a_mu = encoder(anchors)  
         a_mu_scale = torch.div(a_mu,scale)
-
         # Loop for each sampled set of coefficient
         loss_total = 0.0
         loss_Psi = 0.0
@@ -414,7 +414,6 @@ for epoch in xrange(opt.epoch):
             else:
                 # Compute loss funciton during warm up
                 loss_total = loss_total + recon_weight*recon_loss
-                
         if counter > num_pretrain_steps:  
             # Add dictionary regularizer
             loss_total = loss_total/num_c_samp +  0.5*opt.gamma*torch.sum(torch.pow(Psi,2))
@@ -505,7 +504,6 @@ for epoch in xrange(opt.epoch):
             if learn_anchor_flag ==1:
                 # Set anchor weights to 0
                 anchors.grad.data.zero_()  
-    
         # Save loss terms
         lr_save[counter] = lr_psi
         time_save[counter] = time.time() - epoch_time
@@ -535,7 +533,7 @@ for epoch in xrange(opt.epoch):
             sio.savemat(save_folder + 'lossVals.mat',save_dict)
             
         # Save test data    
-        if np.mod(counter,5) == 0:
+        if np.mod(counter,25) == 0:
             # Plot sampled test outputs
             a_mu_scale_np = a_mu_scale.detach().numpy()
             sample_latent = encoder(test_inputs_torch)
@@ -573,7 +571,8 @@ for epoch in xrange(opt.epoch):
                             'a_mu_scale_np':a_mu_scale_np,'z_scale_np':z_scale_np,'z_test_samp':z_test_samp,'x_est':x_est,'c_est_a_store':c_est_a_store,
                             'z_coeff':z_coeff.detach().numpy(),'loss_total':loss_save[:counter],'loss_recon':loss_recon[:counter],'loss_post_TO':loss_post_TO[:counter],
                             'loss_post_l1':loss_post_l1[:counter],'loss_prior_TO':loss_prior_TO[:counter],'Psi_new':Psi.detach().numpy(),'lr_save':lr_save[:counter],
-                            'time_save':time_save[:counter],'lr_main':opt.lr,'z_mu_scale_test_np':z_mu_scale_test_np,'z_coeff_test_np':z_coeff_test_np}
+                            'time_save':time_save[:counter],'lr_main':opt.lr,'z_mu_scale_test_np':z_mu_scale_test_np,'z_coeff_test_np':z_coeff_test_np,
+			    'params':opt}
                 
                 if data_use == 'rotDigits' or data_use == 'natDigits':
                     save_dict['samples'] = samples
@@ -581,16 +580,16 @@ for epoch in xrange(opt.epoch):
                 if learn_anchor_flag == 1:
                     save_dict['anchor_orig'] = anchor_orig
                     save_dict['anchors'] = anchors.detach().numpy()
-                if np.mod(counter,500) == 0:
+                if np.mod(counter,100) == 0:
                     sio.savemat(save_folder + 'spreadInferenceTest_step' + str(counter) + '.mat',save_dict)
                 else:
                     sio.savemat(save_folder + 'spreadInferenceTest_current.mat',save_dict)
                     
         # Save network weights            
-        if np.mod(counter,5) == 0 and counter != 0: 
+        if np.mod(counter,50) == 0 and counter != 0: 
             net_save_dict = {'step': counter,'epoch': epoch,'model_state_dict_encoder': encoder.state_dict(),'model_state_dict_decoder': decoder.state_dict(),
                              'model_state_dict_transOpt': transNet.state_dict(),'optimizer_auto_state_dict': optimizer_NN.state_dict(),'loss': loss_total,'Psi':Psi}
-            if np.mod(counter,500) == 0 and counter > num_pretrain_steps:
+            if np.mod(counter,200) == 0 and counter > num_pretrain_steps:
 
                 if learn_anchor_flag == 1:
                     net_save_dict['anchors'] = anchors
