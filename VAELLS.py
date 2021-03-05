@@ -30,7 +30,7 @@ from trans_opt_objectives import *
 
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--model', type=str, default='/storage/home/hcoda1/6/mnorko3/p-crozell3-0/projects/VAELLS/circle/VAELLS_new', help='folder name')
+parser.add_argument('--model', type=str, default='./results/TOVAE', help='folder name')
 parser.add_argument('--epoch', type=int, default=80, help='number of epochs of training')
 parser.add_argument('--batch_size', type=int, default=30, help='size of the batches')
 parser.add_argument('--c_dim', type=int, default=1, help='number of color channels in the input image')
