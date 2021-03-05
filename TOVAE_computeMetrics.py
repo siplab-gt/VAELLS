@@ -18,7 +18,6 @@ import torch
 from transOptModel import TransOpt
 
 from utils import *
-from test_metrics_MNIST_natDigit import *
 from trans_opt_objectives import *
 
 parser = argparse.ArgumentParser()  
@@ -116,8 +115,8 @@ titrate_steps = num_pretrain_steps + 15000    # number of steps after which titr
 max_psi_lr = 0.008      # max psi learning rate allowed
 
 # Specify the sampling spread and variance in the pretrained steps
-post_l1_weight = 100.0
-to_noise_std = 0.0
+#post_l1_weight = 100.0
+#to_noise_std = 0.0
 
 # Parameters for finding the closest anchor points
 closest_anchor_flag = opt.closest_anchor_flag
@@ -199,10 +198,10 @@ sample_X_torch =sample_X_torch.permute(0,3,1,2)
 sample_X_torch =sample_X_torch.float()
 
 if data_use == 'natDigits':
-    LL,LL_detail,LL_no_add,LL_detail_no_add = log_likelihood(encoder,decoder,transNet,sampler_c,Psi,sample_X_torch,sample_labels[opt.startPt:opt.startPt+numTestPts],anchors,to_noise_std,num_anchor,M,numRestart,scale,opt,save_folder,num_samp)
+    LL,LL_detail,LL_no_add,LL_detail_no_add = log_likelihood(encoder,decoder,transNet,sampler_c,Psi,sample_X_torch,sample_labels[opt.startPt:opt.startPt+numTestPts],anchors,opt.to_noise_std,num_anchor,M,numRestart,scale,opt,save_folder,num_samp)
     MSE,ELBO = test_metrics(encoder,decoder,transNet,sampler_c,Psi,sample_X_torch,sample_labels[opt.startPt:opt.startPt+numTestPts],anchors,to_noise_std,num_anchor,M,1,opt,mse_loss_sum,latent_mse_loss,scale)
 elif data_use == 'rotDigits':
-    LL,LL_detail,LL_no_add,LL_detail_no_add = log_likelihood(encoder,decoder,transNet,sampler_c,Psi,sample_X_torch,sample_labels[0:numTestPts],to_noise_std,num_anchor,M,numRestart,scale,opt,save_folder,num_samp)
+    LL,LL_detail,LL_no_add,LL_detail_no_add = log_likelihood(encoder,decoder,transNet,sampler_c,Psi,sample_X_torch,sample_labels[0:numTestPts],opt.to_noise_std,num_anchor,M,numRestart,scale,opt,save_folder,num_samp)
     MSE,ELBO = test_metrics(encoder,decoder,transNet,sampler_c,Psi,sample_X,sample_labels,to_noise_std,num_anchor,M,1,opt,mse_loss_sum,latent_mse_loss,scale)
     
 sio.savemat(save_folder + 'LLMetrics_batch' + str(opt.batch_size) + '_' + str(num_samp) + 'samp_startPt' + str(opt.startPt) + '_step' + str(opt.stepUse) + '.mat',{'LL':LL,'LL_detail':LL_detail,'LL_no_add':LL_no_add,'LL_detail_no_add':LL_detail_no_add});
